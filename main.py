@@ -5,22 +5,19 @@ import requests
 import datetime
 import geocoder
 import os  # решение проблемы отображения картинок
+import threading
+
+class State:
+    i = 0
+
+s = State()
+sem = threading.Semaphore()
 
 PATH_ASSETS = os.path.abspath(__file__ + '/../assets') # решение проблемы отображения картинок
 
 lat = 0
 lon = 0
 result_get_info = None
-
-days = [
-    "Mon",
-    "Tue",
-    "Wed",
-    "Thu",
-    "Fri",
-    "Sat",
-    "Sun",
-]
 
 
 def get_coordinates():
@@ -57,6 +54,37 @@ def main(page: Page):
     get_info()
     '''получаем данные с openweather'''
 
+    def _bot():
+
+        bot = Container(
+            width=310,
+            height=660 * 0.40,
+            gradient=LinearGradient(
+                begin=alignment.bottom_left,
+                end=alignment.top_right,
+                colors=["lightblue600", "lightblue900"],
+            ),
+            border_radius=35,
+            animate=animation.Animation(duration=350, curve=AnimationCurve.DECELERATE, ),
+            on_click=lambda b: _expand(b),
+            padding=15,
+            content=Column(
+                alignment=alignment.top_center,
+                spacing=10,
+                controls=[
+                    Row(
+                        alignment=alignment.center,
+                        controls=[
+                            Text(
+                                f'{result_get_info['name']}, {result_get_info['sys']['country']}',
+                                size=16,
+                            )
+                        ],
+                    ),
+                ]
+            ),
+        )
+        return bot
     def _middle():
 
         middle = Container(
@@ -69,7 +97,7 @@ def main(page: Page):
             ),
             border_radius=35,
             animate=animation.Animation(duration=350, curve=AnimationCurve.DECELERATE, ),
-            on_click=lambda e: _expand(e),
+            on_click=lambda b: _expand_mid(b),
             padding=15,
             content=Column(
                 alignment=alignment.top_center,
@@ -89,6 +117,14 @@ def main(page: Page):
         )
         return middle
 
+
+    def _expand_mid(e):
+        if _c.content.controls[1].height == 560:
+            _c.content.controls[1].height = 660 * 0.40
+            _c.content.controls[1].update()
+        else:
+            _c.content.controls[1].height = 560
+            _c.content.controls[1].update()
     def _expand(e):
         if _c.content.controls[0].height == 560:
             _c.content.controls[0].height = 660 * 0.40
@@ -122,7 +158,7 @@ def main(page: Page):
             ),
             border_radius=35,
             animate=animation.Animation(duration=350, curve=AnimationCurve.DECELERATE, ),
-            on_hover=lambda e: _expand(e),
+            on_click=lambda e: _expand(e),
             padding=15,
             content=Column(
                 alignment=alignment.top_center,
@@ -303,14 +339,33 @@ def main(page: Page):
         )
         return top
 
+    def on_scroll(e: flet.OnScrollEvent):
+        if e.pixels >= e.max_scroll_extent -100:
+            if sem.acquire(blocking=False):
+                try:
+                    for _top in _c:
+                        _c.update()
+                finally:
+                    sem.release()
+    cl = flet.Column(
+
+    )
+
     _c = Container(
-        width=310,
-        height=660,
+        # width=None,
+        # height=None,
         border_radius=35,
         bgcolor='black',
         padding=10,
-        content=Column(width=300, height=550, controls=[_top(), _middle()]),
-    )
+        content=Column(
+            width=300,
+            height=550,
+            scroll=flet.ScrollMode.ALWAYS,
+            on_scroll_interval=0,
+            on_scroll=on_scroll,
+            controls=[_top(), _middle(), _bot()]),
+        )
+
     page.add(_c)
     page.update()
 
