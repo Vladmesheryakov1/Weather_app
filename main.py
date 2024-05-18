@@ -4,16 +4,18 @@ from flet import *
 import requests
 import datetime
 import geocoder
-import os  # решение проблемы отображения картинок
+import os
 import threading
+
 
 class State:
     i = 0
 
+
 s = State()
 sem = threading.Semaphore()
 
-PATH_ASSETS = os.path.abspath(__file__ + '/../assets') # решение проблемы отображения картинок
+PATH_ASSETS = os.path.abspath(__file__ + '/../assets')  # решение проблемы отображения картинок
 
 lat = 0
 lon = 0
@@ -43,20 +45,12 @@ def get_info():
     return result_get_info
 
 
-# top container
+class Blue_Container:
+    def __init__(self, result_get_info):
+        self.result_get_info = result_get_info
 
-def main(page: Page):
-    page.horizontal_alignment = CrossAxisAlignment.CENTER
-    page.vertical_alignment = MainAxisAlignment.CENTER
-
-    get_coordinates()
-    '''получаем координаты'''
-    get_info()
-    '''получаем данные с openweather'''
-
-    def _bot():
-
-        bot = Container(
+    def create_container(self):
+        universal_container = Container(
             width=310,
             height=660 * 0.40,
             gradient=LinearGradient(
@@ -76,7 +70,7 @@ def main(page: Page):
                         alignment=alignment.center,
                         controls=[
                             Text(
-                                f'{result_get_info['name']}, {result_get_info['sys']['country']}',
+                                #отображаемая информация ',
                                 size=16,
                             )
                         ],
@@ -84,47 +78,25 @@ def main(page: Page):
                 ]
             ),
         )
-        return bot
-    def _middle():
+        return universal_container
 
-        middle = Container(
-            width=310,
-            height=660 * 0.40,
-            gradient=LinearGradient(
-                begin=alignment.bottom_left,
-                end=alignment.top_right,
-                colors=["lightblue600", "lightblue900"],
-            ),
-            border_radius=35,
-            animate=animation.Animation(duration=350, curve=AnimationCurve.DECELERATE, ),
-            on_click=lambda b: _expand_mid(b),
-            padding=15,
-            content=Column(
-                alignment=alignment.top_center,
-                spacing=10,
-                controls=[
-                    Row(
-                        alignment=alignment.center,
-                        controls=[
-                            Text(
-                                f'{result_get_info['name']}, {result_get_info['sys']['country']}',
-                                size=16,
-                            )
-                        ],
-                    ),
-                ]
-            ),
-        )
-        return middle
+    # def _expand(e):
+    #     '''animation'''
+    #     pass
 
 
-    def _expand_mid(e):
-        if _c.content.controls[1].height == 560:
-            _c.content.controls[1].height = 660 * 0.40
-            _c.content.controls[1].update()
-        else:
-            _c.content.controls[1].height = 560
-            _c.content.controls[1].update()
+blue_container = Blue_Container.create_container(result_get_info)
+
+
+def main(page: Page):
+    page.horizontal_alignment = CrossAxisAlignment.CENTER
+    page.vertical_alignment = MainAxisAlignment.CENTER
+
+    get_coordinates()
+    '''получаем координаты'''
+    get_info()
+    '''получаем данные с openweather'''
+
     def _expand(e):
         if _c.content.controls[0].height == 560:
             _c.content.controls[0].height = 660 * 0.40
@@ -134,19 +106,6 @@ def main(page: Page):
             _c.content.controls[0].update()
 
     def _top():
-
-        # _today = current_temp()
-
-        _today_extra = GridView(
-            max_extent=150,
-            expand=1,
-            run_spacing=5,
-            spacing=5,
-
-        )
-
-        for info in get_info():
-            _today_extra.controls.append(info)
 
         top = Container(
             width=310,
@@ -340,16 +299,13 @@ def main(page: Page):
         return top
 
     def on_scroll(e: flet.OnScrollEvent):
-        if e.pixels >= e.max_scroll_extent -100:
+        if e.pixels >= e.max_scroll_extent - 100:
             if sem.acquire(blocking=False):
                 try:
                     for _top in _c:
                         _c.update()
                 finally:
                     sem.release()
-    cl = flet.Column(
-
-    )
 
     _c = Container(
         # width=None,
@@ -363,8 +319,8 @@ def main(page: Page):
             scroll=flet.ScrollMode.ALWAYS,
             on_scroll_interval=0,
             on_scroll=on_scroll,
-            controls=[_top(), _middle(), _bot()]),
-        )
+            controls=[_top(), blue_container]),
+    )
 
     page.add(_c)
     page.update()
