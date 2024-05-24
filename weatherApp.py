@@ -57,7 +57,8 @@ class WeatherApp:
     def __init__(self):
         self.caption = "Weather App v0.1"
         self.blue_container = BlueContainer(ft.Text("Blue container parameter text", size=16))
-        self.main_container = MainContainer([self.blue_container])
+        self.secondary_blue_container = BlueContainer(ft.Text("Secondary Blue container parameter text", size=22))
+        self.main_container = MainContainer([self.blue_container, self.secondary_blue_container])
 
     def run(self, page: ft.Page):
         page.add(ft.Text(self.caption), self.main_container)
