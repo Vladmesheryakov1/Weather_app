@@ -1,8 +1,40 @@
 import flet as ft
 
 
+class BlueContainer(ft.UserControl):
+    def __init__(self, text: ft.Text):
+        super().__init__()
+        self.container = ft.Container(
+            width=310,
+            height=660 * 0.40,
+            gradient=ft.LinearGradient(
+                begin=ft.alignment.bottom_left,
+                end=ft.alignment.top_right,
+                colors=[ft.colors.LIGHT_BLUE_600, ft.colors.LIGHT_BLUE_900],
+            ),
+            border_radius=35,
+            animate=ft.animation.Animation(duration=350, curve=ft.AnimationCurve.DECELERATE, ),
+            on_click=lambda b: {},
+            padding=15,
+            content=ft.Column(
+                alignment=ft.alignment.top_center,
+                spacing=10,
+                controls=[
+                    ft.Row(
+                        alignment=ft.alignment.center,
+                        controls=[text]
+                    ),
+                ]
+            ),
+        )
+
+    def build(self):
+        self.controls = [self.container]
+        return self.controls
+
+
 class MainContainer(ft.UserControl):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, controls):
         super().__init__()
         self.container = ft.Container(
             border_radius=35,
@@ -11,10 +43,8 @@ class MainContainer(ft.UserControl):
             content=ft.Column(
                 width=300,
                 height=550,
-                controls=[
-                    ft.Text("First control", color=ft.colors.WHITE),
-                    ft.Text("Second control", color=ft.colors.WHITE),
-                ])
+                controls=controls
+            )
         )
         self.controls = None
 
@@ -26,7 +56,8 @@ class MainContainer(ft.UserControl):
 class WeatherApp:
     def __init__(self):
         self.caption = "Weather App v0.1"
-        self.main_container = MainContainer()
+        self.blue_container = BlueContainer(ft.Text("Blue container parameter text", size=16))
+        self.main_container = MainContainer([self.blue_container])
 
     def run(self, page: ft.Page):
         page.add(ft.Text(self.caption), self.main_container)
