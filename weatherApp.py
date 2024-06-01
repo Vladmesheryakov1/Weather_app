@@ -1,31 +1,52 @@
 import flet as ft
 import os
 
-PATH_ASSETS = os.path.abspath(__file__ + '/../assets')
+
+class AssetsHelper:
+    def __init__(self, path: str = None):
+        file_dir = os.path.dirname(__file__)
+        self.assetsPath = os.path.abspath(file_dir + path)
+
+    def getFilePath(self, filename: str):
+        return os.path.join(self.assetsPath, filename)
+
+
+assets = AssetsHelper('/assets')
 
 
 class TodayWeatherContainer(ft.UserControl):
     def __init__(self):
         super().__init__()
+        img_src = assets.getFilePath('weather.png')
         self.image_column = ft.Column(
             controls=[
-                ft.Container(width=100, height=100, image_src=os.path.join(PATH_ASSETS, 'weather.png'))
+                ft.Container(width=100, height=100, image_src=img_src)
             ]
         )
         self.info_column = ft.Column (
             controls=[
-                ft.Container(width=100, height=100, image_src=os.path.join(PATH_ASSETS, 'weather.png'))
+                ft.Container(width=100, height=100, content=ft.Text('Weather Info'))
             ]
         )
 
+        padding = ft.Container(padding=ft.padding.only(bottom=5))
         self.controls = ft.Row(alignment=ft.alignment.center, spacing=30,
-                               controls=[self.image_column, self.info_column])
+                               controls=[self.image_column, padding, self.info_column])
 
     def build(self):
         return self.controls
 
 
 class BlueContainer(ft.UserControl):
+
+    def resize(self, e):
+        if self.container.height == 560:
+            self.container.height = 660 * 0.40
+            self.container.update()
+        else:
+            self.container.height = 560
+            self.container.update()
+
     def __init__(self, text: ft.Text):
         super().__init__()
         self.weather_container = TodayWeatherContainer()
@@ -39,18 +60,17 @@ class BlueContainer(ft.UserControl):
             ),
             border_radius=35,
             animate=ft.animation.Animation(duration=350, curve=ft.AnimationCurve.DECELERATE, ),
-            on_click=lambda b: {},
+            on_click=lambda e: self.resize(e),
             padding=15,
             content=ft.Column(
                 alignment=ft.alignment.top_center,
                 spacing=10,
                 controls=[
-                    ft.Row(
-                        alignment=ft.alignment.center,
-                        controls=[text, ft.Container(padding=ft.padding.only(bottom=5)), self.weather_container]
-                    ),
+                    ft.Row(alignment=ft.alignment.center, controls=[text]),
+                    ft.Container(padding=ft.padding.only(bottom=5)),
+                    ft.Row(alignment=ft.alignment.center, controls=[self.weather_container])
                 ]
-            ),
+            )
         )
 
     def build(self):
