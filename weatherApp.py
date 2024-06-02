@@ -23,10 +23,21 @@ class TodayWeatherContainer(ft.UserControl):
                 ft.Container(width=100, height=100, image_src=img_src)
             ]
         )
+
+        self.today_desc = ft.Text(size=12, text_align=ft.alignment.center, value='Today')
+
+        self.temp_val = ft.Row(vertical_alignment=ft.alignment.center, spacing=0, controls=[
+            ft.Text("17.93 C", size=20, text_align=ft.alignment.center)
+        ])
+
+        self.weather_desc = ft.Row(vertical_alignment=ft.alignment.center, controls=[
+            ft.Text("Clouds - broken clouds", size=10, text_align=ft.alignment.center, color=ft.colors.WHITE54)
+        ])
+
         self.info_column = ft.Column (
-            controls=[
-                ft.Container(width=100, height=100, content=ft.Text('Weather Info'))
-            ]
+            spacing=5,
+            horizontal_alignment=ft.alignment.center,
+            controls=[self.today_desc, self.temp_val, self.weather_desc]
         )
 
         padding = ft.Container(padding=ft.padding.only(bottom=5))
